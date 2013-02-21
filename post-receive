@@ -2,7 +2,6 @@
 error="false"
 
 # The URL to login 
-# "http://erpal.local/rest/git/user/login"
 loginurl=$(git config hooks.tagretloginurl || echo $error) 
 # check URL
 if [ $loginurl == $error ]; then
@@ -17,7 +16,6 @@ fi
 curl -b /tmp/cookie_git -c /tmp/cookie_git -s "username=git&password=git" "$loginurl"
 
 # The URL to send the commit information to 
-# "http://erpal.local/rest/git/git/commit"
 url=$(git config hooks.tagretcommiturl || echo $error) 
 # check URL
 if [ $url == $error ]; then
