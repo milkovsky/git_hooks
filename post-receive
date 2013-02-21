@@ -13,7 +13,33 @@ if [ $loginurl == $error ]; then
 	exit
 fi
 
-curl -b /tmp/cookie_git -c /tmp/cookie_git -s "username=git&password=git" "$loginurl"
+# username
+username=$(git config hooks.tagretloginusername || echo $error) 
+# check username
+if [ $username == $error ]; then
+	# URL error
+	echo "error: Login failed"
+	echo "You must configure your repository and set \"tagretloginusername\" config paraneter"
+	echo "Go to your repository and run: git config hooks.tagretloginusername <url>"
+	echo "Or add \"tagretloginusername\" parameter to your config file"
+	exit
+fi
+
+# password
+password=$(git config hooks.tagretloginpassword || echo $error) 
+# check username
+if [ $username == $error ]; then
+	# URL error
+	echo "error: Login failed"
+	echo "You must configure your repository and set \"tagretloginpassword\" config paraneter"
+	echo "Go to your repository and run: git config hooks.tagretloginpassword <url>"
+	echo "Or add \"tagretloginpassword\" parameter to your config file"
+	exit
+fi
+
+# login
+# @todo: hide curl output
+curl -b /tmp/cookie_git -c /tmp/cookie_git -d "username=$username&password=$password" "$loginurl"
 
 # The URL to send the commit information to 
 url=$(git config hooks.tagretcommiturl || echo $error) 
@@ -106,10 +132,13 @@ do
 	json+="}"
 
 	# send JSON
-	#curl -b /tmp/cookie_git -c /tmp/cookie_git -s "payload=$json" "$url"
+	# @todo: hide curl output
+	curl -b /tmp/cookie_git -c /tmp/cookie_git -d "payload=$json" "$url"
 	
 	## for debugging ##
-	echo $json
-	curl -b /tmp/cookie_git -c /tmp/cookie_git -v -H -X POST -d "payload=$json" "$url"
+	#echo $json
+	#curl -b /tmp/cookie_git -c /tmp/cookie_git -v -H -X POST -d "payload=$json" "$url"
 	#echo $(git config -l)
 done
+
+
