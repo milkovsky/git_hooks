@@ -4,7 +4,7 @@ error="false"
 # The URL to login 
 loginurl=$(git config hooks.tagretloginurl || echo $error) 
 # check URL
-if [ $loginurl == $error ]; then
+if [ "$loginurl" == $error ]; then
 	# URL error
 	echo "error: Login failed"
 	echo "You must configure your repository and set \"tagretloginurl\" config paraneter"
@@ -16,7 +16,7 @@ fi
 # username
 username=$(git config hooks.tagretloginusername || echo $error) 
 # check username
-if [ $username == $error ]; then
+if [ "$username" == $error ]; then
 	# URL error
 	echo "error: Login failed"
 	echo "You must configure your repository and set \"tagretloginusername\" config paraneter"
@@ -28,7 +28,7 @@ fi
 # password
 password=$(git config hooks.tagretloginpassword || echo $error) 
 # check username
-if [ $username == $error ]; then
+if [ "$username" == $error ]; then
 	# URL error
 	echo "error: Login failed"
 	echo "You must configure your repository and set \"tagretloginpassword\" config paraneter"
@@ -66,42 +66,43 @@ do
 		for rev in $(git rev-list $oldrev..$newrev)
 		do
 			# first comma check
-			json+="$comma"
+			# @todo: '+=' operation doesn't work so we use json=$json"string" instead of json+="string"
+			json=$json$comma
 			if [ $comma=="" ]; then
 				comma=","
 			fi
 			
 			# prepare JSON for commit
-			json+="{"
+			json=$json"{"
 				# id
-				json+="\"id\": \"$rev\","
+				json=$json"\"id\": \"$rev\","
 				# message
 				message=$(git cat-file commit $rev | sed '1,/^$/d')
-				json+="\"message\": \"$message\","
+				json=$json"\"message\": \"$message\","
 				
 				# Author
 				author_line=$(git cat-file commit $rev | sed '1,2d' | sed '2~2d')
-				json+="\"author\": {";
+				json=$json"\"author\": {";
 					# email
 					email=$(echo $author_line | sed -r 's/.*<//' | sed -r 's/>.*//')
-					json+="\"email\": \"$email\","
+					json=$json"\"email\": \"$email\","
 					# name
 					author=$(echo $author_line | sed -r 's/author //')
 					name=$(echo $author | sed -r 's/\s<.*//')
-					json+="\"name\": \"$name\""
-				json+="},";
+					json=$json"\"name\": \"$name\""
+				json=$json"},";
 				
 				# Committer
 				committer_line=$(git cat-file commit $rev | sed '1,3d' | sed '3~3d')
-				json+="\"committer\": {";
+				json=$json"\"committer\": {";
 					# email
 					committer_email=$(echo $committer_line | sed -r 's/.*<//' | sed -r 's/>.*//')
-					json+="\"email\": \"$committer_email\","
+					json=$json"\"email\": \"$committer_email\","
 					# name
 					committer=$(echo $committer_line | sed -r 's/committer //')
 					name=$(echo $committer | sed -r 's/\s<.*//')
-					json+="\"name\": \"$name\""
-				json+="},";
+					json=$json"\"name\": \"$name\""
+				json=$json"},";
 				
 				# timestamp
 				time=$(echo $author_line | sed -r 's/.*>\s//')
@@ -109,27 +110,27 @@ do
 				# @todo: what is "-08:00" in this format?
 				# %Y-%m-%dT%H:%M:%S
 				timastamp=$(perl -mbigint -mPOSIX -e "print( POSIX::strftime(\"%Y-%m-%d %H:%M:%S\",localtime( $time ) ))") 
-				json+="\"timestamp\": \"$timastamp\","
+				json=$json"\"timestamp\": \"$timastamp\","
 				
 				# added
-				json+="\"added\": []"
+				json=$json"\"added\": []"
 				# @todo: url, distinct, modified, removed
-			json+="}"
+			json=$json"}"
 		done
 
-		json+="
+		json=$json"
 			],
 			\"ref\": \"$refname\","
 		
 		# repository
-		json+="\"repository\": {"
+		json=$json"\"repository\": {"
 			# @todo: url
 			#repository_url=$(git config remote.origin.url)
-			json+="\"url\": \"\","
+			json=$json"\"url\": \"\","
 			# @todo: name
-			json+="\"name\": \"\""
-		json+="}"
-	json+="}"
+			json=$json"\"name\": \"\""
+		json=$json"}"
+	json=$json"}"
 
 	# send JSON
 	# @todo: hide curl output
