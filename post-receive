@@ -1,6 +1,18 @@
 #!/bin/sh
 error="false"
 
+# Repository URL
+repourl=$(git config hooks.repourl || echo $error) 
+# check URL
+if [ "$repourl" == $error ]; then
+	# URL error
+	echo "error: no repository URL"
+	echo "You must configure your repository and set \"repourl\" config paraneter"
+	echo "Go to your repository and run: git config hooks.repourl <url>"
+	echo "Or add \"repourl\" parameter to your config file"
+	exit
+fi
+
 # The URL to login 
 loginurl=$(git config hooks.tagretloginurl || echo $error) 
 # check URL
@@ -20,7 +32,7 @@ if [ "$username" == $error ]; then
 	# URL error
 	echo "error: Login failed"
 	echo "You must configure your repository and set \"tagretloginusername\" config paraneter"
-	echo "Go to your repository and run: git config hooks.tagretloginusername <url>"
+	echo "Go to your repository and run: git config hooks.tagretloginusername <name>"
 	echo "Or add \"tagretloginusername\" parameter to your config file"
 	exit
 fi
@@ -32,7 +44,7 @@ if [ "$username" == $error ]; then
 	# URL error
 	echo "error: Login failed"
 	echo "You must configure your repository and set \"tagretloginpassword\" config paraneter"
-	echo "Go to your repository and run: git config hooks.tagretloginpassword <url>"
+	echo "Go to your repository and run: git config hooks.tagretloginpassword <password>"
 	echo "Or add \"tagretloginpassword\" parameter to your config file"
 	exit
 fi
@@ -134,9 +146,8 @@ EOF
 		
 		# repository
 		json=$json"\"repository\": {"
-			# @todo: url
 			#repository_url=$(git config remote.origin.url)
-			json=$json"\"url\": \"\","
+			json=$json"\"url\": \"$repourl\","
 			# @todo: name
 			json=$json"\"name\": \"\""
 		json=$json"}"
