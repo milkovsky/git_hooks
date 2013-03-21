@@ -77,15 +77,18 @@ do
 				# id
 				json=$json"\"id\": \"$rev\","
 				# message
+				# allow multiline commit messages
+				#message=$(git cat-file commit $rev | sed '1,/^$/d')
 				read -d '' message <<EOF
 \"message\": \"$(git cat-file commit $rev | sed '1,/^$/d')\",
 EOF
-				#echo -e $message #test [#6] [?bug] [@1] [ss]
-				
-				#message=$(git cat-file commit $rev | sed '1,/^$/d')
+				#echo -e $message #  test [#6] [?bug] [@1] [ss]
 				#json=$json$(echo -e "\"message\": \"$message\",")
-				message=$(echo -e $message)
 				#json=$json$(printf "%s" "$message")
+				message=$(echo -e $message)
+				
+				# encode the percent character '%' as %25
+				message=$(echo $message | sed 's/%/%25/g')
 				json=$json$message
 				
 				# Author
@@ -150,5 +153,3 @@ EOF
 	#curl -b /tmp/cookie_git -c /tmp/cookie_git -v -H -X POST -d "payload=$json" "$url"
 	#echo $(git config -l)
 done
-
-
