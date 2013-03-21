@@ -76,23 +76,22 @@ do
 			json=$json"{"
 				# id
 				json=$json"\"id\": \"$rev\","
+				
 				# message
-				# allow multiline commit messages
-				#message=$(git cat-file commit $rev | sed '1,/^$/d')
+				# handle multiline commit messages
 				read -d '' message <<EOF
 \"message\": \"$(git cat-file commit $rev | sed '1,/^$/d')\",
 EOF
-				#echo -e $message #  test [#6] [?bug] [@1] [ss]
 				#json=$json$(echo -e "\"message\": \"$message\",")
 				#json=$json$(printf "%s" "$message")
 				message=$(echo -e $message)
-				
 				# encode the percent character '%' as %25
 				message=$(echo $message | sed 's/%/%25/g')
+				# add message to JSON
 				json=$json$message
 				
 				# Author
-				author_line=$(git cat-file commit $rev | sed '1,2d' | sed '2~2d')
+				author_line=$(git cat-file commit $rev | sed '1,2d' | sed '2,$d')
 				json=$json"\"author\": {";
 					# email
 					email=$(echo $author_line | sed -r 's/.*<//' | sed -r 's/>.*//')
@@ -116,17 +115,16 @@ EOF
 				json=$json"},";
 				
 				# timestamp
-				#time=$(echo $author_line | sed -r 's/.*>\s//')
+				time=$(echo $author_line | sed -r 's/.*>\s//')
 				# timestamp format: "2008-02-15T14:36:34-08:00"
 				# @todo: what is "-08:00" in this format?
 				# %Y-%m-%dT%H:%M:%S
-				#timastamp=$(perl -mbigint -mPOSIX -e "print( POSIX::strftime(\"%Y-%m-%d %H:%M:%S\",localtime( $time ) ))") # with "-e"
-				#timastamp=$(perl -mbigint -mPOSIX "print( POSIX::strftime(\"%Y-%m-%d %H:%M:%S\",localtime( $time ) ))") # without "-e"
-				timastamp='' # @todo: get timestamp
+				timastamp=$(perl -mbigint -mPOSIX -e "print( POSIX::strftime(\"%Y-%m-%d %H:%M:%S\",localtime( $time ) ))")
 				json=$json"\"timestamp\": \"$timastamp\","
+				
+				# @todo: added, url, distinct, modified, removed
 				# added
 				json=$json"\"added\": []"
-				# @todo: url, distinct, modified, removed
 			json=$json"}"
 		done
 
