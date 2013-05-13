@@ -50,8 +50,9 @@ if [ "$username" == $error ]; then
 fi
 
 # login
-# @todo: hide curl output
-curl -b /tmp/cookie_git -c /tmp/cookie_git -d "username=$username&password=$password" "$loginurl"
+echo "Loging in to ERPAL git service..."
+curl -b /tmp/cookie_git -c /tmp/cookie_git -d "username=$username&password=$password" "$loginurl" -s
+echo ""
 
 # The URL to send the commit information to 
 url=$(git config hooks.tagretcommiturl || echo $error) 
@@ -95,7 +96,7 @@ do
 "message": "$(git cat-file commit $rev | sed '1,/^$/d')",
 EOF
 )
-				# encode the percent character '%' as %25			
+				# encode the percent character '%' as %25
 				message=$(echo $message | sed 's/%/%25/g')
 				# add message to JSON
 				json=$json"$message"
@@ -127,8 +128,8 @@ EOF
 				# timestamp
 				time=$(echo $author_line | sed -r 's/.*>\s//')
 				# timestamp format: "2008-02-15T14:36:34-08:00"
-				# %Y-%m-%dT%H:%M:%S
 				# @todo: what is "-08:00" in this format?
+				# %Y-%m-%dT%H:%M:%S
 				timastamp=$(perl -mbigint -mPOSIX -e "print( POSIX::strftime(\"%Y-%m-%d %H:%M:%S\",localtime( $time ) ))")
 				json=$json"\"timestamp\": \"$timastamp\","
 				
@@ -152,12 +153,13 @@ EOF
 	json=$json"}"
 
 	# send JSON
-	# @todo: hide curl output
-	curl -b /tmp/cookie_git -c /tmp/cookie_git -d "payload=$json" "$url"
+	echo "Reading commit message..."
+	curl -b /tmp/cookie_git -c /tmp/cookie_git -d "payload=$json" "$url" -s
+	echo ""
 	
 	## for debugging ##
 	#echo $json
-	#curl -b /tmp/cookie_git -c /tmp/cookie_git -d "payload=$json" "http://requestb.in/x29eoyx2"
+	#curl -b /tmp/cookie_git -c /tmp/cookie_git -d "payload=$json" "http://requestb.in/1e5p2171"
 	#curl -b /tmp/cookie_git -c /tmp/cookie_git -v -H -X POST -d "payload=$json" "$url"
 	#echo $(git config -l)
 done
